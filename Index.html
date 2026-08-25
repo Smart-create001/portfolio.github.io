@@ -1,0 +1,457 @@
+<html style="margin:0;padding:0;">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+(function(){
+  var s = document.createElement('style');
+  s.textContent = `
+    :root{
+      --bg:#1f1f21;
+      --card:#2a2a2d;
+      --text:#f4f4f5;
+      --muted:#a1a1a8;
+      --accent:#7aac2b;
+      --accent-soft:rgba(122,172,43,.14);
+      --accent2:#c4a87c;
+      --accent2-soft:rgba(196,168,124,.14);
+      --border:rgba(161,161,168,.18);
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;}
+    
+    .bg-grid{
+      position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.03;
+      background-image:linear-gradient(var(--muted) 1px,transparent 1px),linear-gradient(90deg,var(--muted) 1px,transparent 1px);
+      background-size:60px 60px;
+    }
+    
+    .radial-glow{
+      position:fixed;top:-200px;right:-200px;width:600px;height:600px;border-radius:50%;
+      background:radial-gradient(circle,rgba(122,172,43,.15),transparent 70%);
+      pointer-events:none;z-index:0;
+    }
+    .radial-glow-2{
+      position:fixed;bottom:-300px;left:-200px;width:700px;height:700px;border-radius:50%;
+      background:radial-gradient(circle,rgba(196,168,124,.1),transparent 70%);
+      pointer-events:none;z-index:0;
+    }
+    
+    .reveal{opacity:0;transform:translateY(30px);animation:fadeUp .8s cubic-bezier(.2,.8,.2,1) forwards;}
+    .reveal:nth-child(2){animation-delay:.1s}
+    .reveal:nth-child(3){animation-delay:.2s}
+    .reveal:nth-child(4){animation-delay:.3s}
+    .reveal:nth-child(5){animation-delay:.4s}
+    .reveal:nth-child(6){animation-delay:.5s}
+    .reveal:nth-child(7){animation-delay:.6s}
+    .reveal:nth-child(8){animation-delay:.7s}
+    @keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+    
+    .gradient-text{
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+    }
+    
+    .filter-chip{
+      padding:10px 22px;border-radius:100px;border:1px solid var(--border);
+      background:transparent;color:var(--muted);cursor:pointer;
+      transition:all .3s cubic-bezier(.2,.8,.2,1);font-family:'Syne',sans-serif;
+      font-size:14px;font-weight:500;letter-spacing:.02em;
+    }
+    .filter-chip:hover{color:var(--text);border-color:var(--muted);transform:translateY(-2px);}
+    .filter-chip.active{
+      background:var(--accent);color:var(--bg);border-color:var(--accent);
+      font-weight:600;box-shadow:0 4px 20px rgba(122,172,43,.3);
+    }
+    
+    .gallery-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      grid-auto-rows:200px;
+      gap:16px;
+    }
+    @media(max-width:1024px){.gallery-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:180px;}}
+    @media(max-width:640px){.gallery-grid{grid-template-columns:1fr;grid-auto-rows:220px;}}
+    
+    .gallery-item{
+      position:relative;border-radius:20px;overflow:hidden;cursor:pointer;
+      background:var(--card);border:1px solid var(--border);
+      transition:transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .5s,border-color .3s;
+      transform-style:preserve-3d;perspective:1000px;
+    }
+    .gallery-item:hover{
+      box-shadow:0 20px 60px rgba(0,0,0,.4),0 0 0 1px var(--accent);
+      border-color:var(--accent);z-index:10;
+    }
+    .gallery-item.hidden{display:none;}
+    
+    .gallery-item.span-2-col{grid-column:span 2;}
+    .gallery-item.span-2-row{grid-row:span 2;}
+    .gallery-item.span-both{grid-column:span 2;grid-row:span 2;}
+    @media(max-width:640px){
+      .gallery-item.span-2-col,.gallery-item.span-both{grid-column:span 1;}
+      .gallery-item.span-2-row,.gallery-item.span-both{grid-row:span 1;}
+    }
+    
+    .gallery-item img{
+      width:100%;height:100%;object-fit:cover;
+      transition:transform .7s cubic-bezier(.2,.8,.2,1),filter .5s;
+    }
+    .gallery-item:hover img{transform:scale(1.08);filter:saturate(1.2) brightness(1.05);}
+    
+    .spotlight{
+      position:absolute;inset:0;pointer-events:none;opacity:0;
+      background:radial-gradient(600px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.15),transparent 40%);
+      transition:opacity .3s;z-index:2;
+    }
+    .gallery-item:hover .spotlight{opacity:1;}
+    
+    .item-overlay{
+      position:absolute;inset:0;z-index:3;
+      background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.8) 100%);
+      opacity:0;transition:opacity .4s;
+      display:flex;flex-direction:column;justify-content:flex-end;padding:24px;
+    }
+    .gallery-item:hover .item-overlay{opacity:1;}
+    
+    .item-category{
+      display:inline-block;padding:4px 12px;border-radius:100px;
+      background:var(--accent-soft);color:var(--accent);
+      font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+      border:1px solid rgba(122,172,43,.3);margin-bottom:10px;
+      width:fit-content;backdrop-filter:blur(10px);
+    }
+    .item-title{font-size:20px;font-weight:700;color:#fff;margin-bottom:4px;}
+    .item-desc{font-size:13px;color:rgba(255,255,255,.7);}
+    
+    .tilt-inner{
+      width:100%;height:100%;transition:transform .2s ease-out;
+    }
+    
+    .lightbox{
+      position:fixed;inset:0;z-index:100;
+      background:rgba(0,0,0,.92);backdrop-filter:blur(20px);
+      display:none;align-items:center;justify-content:center;
+      opacity:0;transition:opacity .3s;
+    }
+    .lightbox.active{display:flex;opacity:1;}
+    .lightbox img{
+      max-width:90vw;max-height:85vh;object-fit:contain;
+      border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.5);
+      transform:scale(.9);transition:transform .4s cubic-bezier(.2,.8,.2,1);
+    }
+    .lightbox.active img{transform:scale(1);}
+    .lightbox-close{
+      position:absolute;top:24px;right:24px;width:48px;height:48px;
+      border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+      color:#fff;cursor:pointer;font-size:24px;display:flex;align-items:center;justify-content:center;
+      transition:all .2s;backdrop-filter:blur(10px);
+    }
+    .lightbox-close:hover{background:rgba(255,255,255,.2);transform:rotate(90deg);}
+    .lightbox-info{
+      position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+      text-align:center;color:#fff;
+    }
+    .lightbox-title{font-size:22px;font-weight:700;margin-bottom:6px;}
+    .lightbox-desc{font-size:14px;color:rgba(255,255,255,.6);}
+    
+    .nav-btn{
+      position:absolute;top:50%;transform:translateY(-50%);
+      width:52px;height:52px;border-radius:50%;
+      background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+      color:#fff;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;
+      transition:all .2s;backdrop-filter:blur(10px);
+    }
+    .nav-btn:hover{background:rgba(255,255,255,.18);}
+    .nav-btn.prev{left:30px;}
+    .nav-btn.next{right:30px;}
+    @media(max-width:640px){
+      .nav-btn.prev{left:12px;}.nav-btn.next{right:12px;}
+    }
+    
+    .eyebrow{
+      font-size:12px;letter-spacing:.25em;text-transform:uppercase;
+      color:var(--accent);font-weight:600;margin-bottom:16px;
+    }
+    
+    .shimmer{
+      position:relative;overflow:hidden;
+    }
+    .shimmer::after{
+      content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent);
+      animation:shimmer 3s infinite;
+    }
+    @keyframes shimmer{to{left:100%;}}
+  `;
+  document.head.appendChild(s);
+})();
+</script>
+<div style="background-color:transparent;box-sizing:border-box;position:relative;min-height:100%;">
+  <div class="bg-grid"></div>
+  <div class="radial-glow"></div>
+  <div class="radial-glow-2"></div>
+  
+  <div style="position:relative;z-index:1;">
+    <div class="max-w-7xl mx-auto px-6 py-16">
+      
+      <!-- HERO SECTION -->
+      <div class="reveal mb-16 text-center">
+        <p class="eyebrow">Visual Collection</p>
+        <h1 style="font-size:clamp(40px,7vw,80px);font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin-bottom:20px;">
+          <span class="gradient-text">Lumina</span> Gallery
+        </h1>
+        <p style="color:var(--muted);font-size:18px;max-width:600px;margin:0 auto;line-height:1.7;">
+          คอลเลกชันภาพถ่ายที่คัดสรรอย่างพิถีพิถัน สำรวจความงามของโลกผ่านเลนส์ศิลปะ
+        </p>
+      </div>
+      
+      <!-- FILTER CHIPS -->
+      <div class="reveal mb-12 flex flex-wrap gap-3 justify-center" id="filters">
+        <button class="filter-chip active" data-filter="all">ทั้งหมด</button>
+        <button class="filter-chip" data-filter="nature">ธรรมชาติ</button>
+        <button class="filter-chip" data-filter="architecture">สถาปัตยกรรม</button>
+        <button class="filter-chip" data-filter="food">อาหาร</button>
+        <button class="filter-chip" data-filter="urban">เมือง</button>
+        <button class="filter-chip" data-filter="sky">ท้องฟ้า</button>
+      </div>
+      
+      <!-- GALLERY GRID - BENTO STYLE -->
+      <div class="gallery-grid" id="gallery">
+        
+        <!-- Item 1 - Large -->
+        <div class="gallery-item span-both reveal" data-category="nature" data-title="ยอดเขาทองคำ" data-desc="แสงอาทิตย์เช้าสัมผัสยอดเขา">
+          <div class="tilt-inner">
+            <img src="https://p16-flow-image-sign.ibyteimg.com/tos-mya-i-3rsxbfecgb/rc_gen_image/29408198f3d54b699f45d2d8b009b570.jpeg~tplv-0es2k971ck-image.image?rcl=202608251615506EE2559D1976FDF64ADC&rk3s=8e244e95&rrcfp=02a80fc2&x-expires=1790237838&x-signature=cV%2BQGSV8I7IB9YQpSAoSxS3jK%2BE%3D" alt="ภูเขา" loading="lazy" onerror="this.style.display='none'">
+            <div class="spotlight"></div>
+            <div class="item-overlay">
+              <span class="item-category">ธรรมชาติ</span>
+              <h3 class="item-title">ยอดเขาทองคำ</h3>
+              <p class="item-desc">แสงอาทิตย์เช้าสัมผัสยอดเขา</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Item 2 -->
+        <div class="gallery-item reveal" data-category="architecture" data-title="เส้นโค้งแห่งศิลปะ" data-desc="สถาปัตยกรรมสมัยใหม่">
+          <div class="tilt-inner">
+            <img src="https://p16-flow-image-sign.ibyteimg.com/tos-mya-i-3rsxbfecgb/rc_gen_image/3a6d99b3b0e64cc4906fab657adc8fac.jpeg~tplv-0es2k971ck-image.image?rcl=202608251615506EE2559D1976FDF64ADC&rk3s=8e244e95&rrcfp=02a80fc2&x-expires=1790237835&x-signature=OlG8LEpPcwcFf25zLTWzDc3933Q%3D" alt="สถาปัตยกรรม" loading="lazy" onerror="this.style.display='none'">
+            <div class="spotlight"></div>
+            <div class="item-overlay">
+              <span class="item-category">สถาปัตยกรรม</span>
+              <h3 class="item-title">เส้นโค้งแห่งศิลปะ</h3>
+              <p class="item-desc">สถาปัตยกรรมสมัยใหม่</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Item 3 -->
+        <div class="gallery-item reveal" data-category="food" data-title="ศิลปะบนจาน" data-desc="การจัดจานระดับมิชลิน">
+          <div class="tilt-inner">
+            <img src="https://p16-flow-image-sign.ibyteimg.com/tos-mya-i-3rsxbfecgb/rc_gen_image/87212e992a7c4b0faa47e255f56e40f4.jpeg~tplv-0es2k971ck-image.image?rcl=202608251615506EE2559D1976FDF64ADC&rk3s=8e244e95&rrcfp=02a80fc2&x-expires=1790237841&x-signature=zjUY%2BtiB82dCa2c06DPNCMLZtiY%3D" alt="อาหาร" loading="lazy" onerror="this.style.display='none'">
+            <div class="spotlight"></div>
+            <div class="item-overlay">
+              <span class="item-category">อาหาร</span>
+              <h3 class="item-title">ศิลปะบนจาน</h3>
+              <p class="item-desc">การจัดจานระดับมิชลิน</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Item 4 - Tall -->
+        <div class="gallery-item span-2-row reveal" data-category="nature" data-title="ไพร่แห่งชีวิต" data-desc="น้ำตกในป่าฝนเขียวขจี">
+          <div class="tilt-inner">
+            <img src="https://p16-flow-image-sign.ibyteimg.com/tos-mya-i-3rsxbfecgb/rc_gen_image/f6b29f664e004d8c9b47e6aa8749eba1.jpeg~tplv-0es2k971ck-image.image?rcl=202608251615506EE2559D1976FDF64ADC&rk3s=8e244e95&rrcfp=02a80fc2&x-expires=1790237843&x-signature=RuebdcLEqQ4QMtJ0mNxiAMzwh%2Fg%3D" alt="น้ำตก" loading="lazy" onerror="this.style.display='none'">
+            <div class="spotlight"></div>
+            <div class="item-overlay">
+              <span class="item-category">ธรรมชาติ</span>
+              <h3 class="item-title">ไพร่แห่งชีวิต</h3>
+              <p class="item-desc">น้ำตกในป่าฝนเขียวขจี</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Item 5 - Wide -->
+        <div class="gallery-item span-2-col reveal" data-category="sky" data-title="สีรุ้งบนฟ้า" data-desc="พระอาทิตย์ตกสวยงาม">
+          <div class="tilt-inner">
+            <img src="https://p16-flow-image-sign.ibyteimg.com/tos-mya-i-3rsxbfecgb/rc_gen_image/4f692199de34479fbc00ad8322e17cec.jpeg~tplv-0es2k971ck-image.image?rcl=202608251615506EE2559D1976FDF64ADC&rk3s=8e244e95&rrcfp=02a80fc2&x-expires=1790237835&x-signature=g3%2BLmVpdnSv4t4RctaX9e4vWTJY%3D" alt="พระอาทิตย์ตก" loading="lazy" onerror="this.style.display='none'">
+            <div class="spotlight"></div>
+            <div class="item-overlay">
+              <span class="item-category">ท้องฟ้า</span>
+              <h3 class="item-title">สีรุ้งบนฟ้า</h3>
+              <p class="item-desc">พระอาทิตย์ตกสวยงาม</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Item 6 -->
+        <div class="gallery-item reveal" data-category="urban" data-title="จังหวะแห่งเมือง" data-desc="แสงไฟกลางคืน">
+          <div class="tilt-inner">
+            <img src="https://p16-flow-image-sign.ibyteimg.com/tos-mya-i-3rsxbfecgb/rc_gen_image/ac575e58d913406bae0ba50300c29c46.jpeg~tplv-0es2k971ck-image.image?rcl=202608251615506EE2559D1976FDF64ADC&rk3s=8e244e95&rrcfp=02a80fc2&x-expires=1790237850&x-signature=AcWupmPAp0H%2BPkNHVCKfeIbZAco%3D" alt="เมือง" loading="lazy" onerror="this.style.display='none'">
+            <div class="spotlight"></div>
+            <div class="item-overlay">
+              <span class="item-category">เมือง</span>
+              <h3 class="item-title">จังหวะแห่งเมือง</h3>
+              <p class="item-desc">แสงไฟกลางคืน</p>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+      
+      <!-- STATS -->
+      <div class="reveal mt-20 pt-12" style="border-top:1px solid var(--border);">
+        <div class="flex flex-wrap gap-8 justify-center text-center">
+          <div>
+            <div style="font-size:36px;font-weight:800;color:var(--accent);">6</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:4px;letter-spacing:.1em;text-transform:uppercase;">ผลงาน</div>
+          </div>
+          <div>
+            <div style="font-size:36px;font-weight:800;color:var(--accent2);">5</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:4px;letter-spacing:.1em;text-transform:uppercase;">หมวดหมู่</div>
+          </div>
+          <div>
+            <div style="font-size:36px;font-weight:800;color:var(--accent);">∞</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:4px;letter-spacing:.1em;text-transform:uppercase;">แรงบันดาลใจ</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- FOOTER -->
+      <div class="mt-16 pt-8 text-center" style="border-top:1px solid var(--border);">
+        <p style="color:var(--muted);font-size:13px;">
+          Lumina Gallery &copy; 2026 &middot; Inspired by React Bits Components
+        </p>
+      </div>
+      
+    </div>
+  </div>
+  
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lbClose">&#x2715;</button>
+    <button class="nav-btn prev" id="lbPrev">&#x2039;</button>
+    <button class="nav-btn next" id="lbNext">&#x203A;</button>
+    <img id="lbImg" src="" alt="">
+    <div class="lightbox-info">
+      <div class="lightbox-title" id="lbTitle"></div>
+      <div class="lightbox-desc" id="lbDesc"></div>
+    </div>
+  </div>
+  
+</div>
+
+<script>
+(function(){
+  // Filter functionality
+  var filters = document.getElementById('filters');
+  var items = document.querySelectorAll('.gallery-item');
+  
+  filters.addEventListener('click', function(e){
+    var btn = e.target.closest('.filter-chip');
+    if(!btn) return;
+    
+    filters.querySelectorAll('.filter-chip').forEach(function(b){b.classList.remove('active');});
+    btn.classList.add('active');
+    
+    var filter = btn.dataset.filter;
+    items.forEach(function(item){
+      if(filter === 'all' || item.dataset.category === filter){
+        item.classList.remove('hidden');
+      } else {
+        item.classList.add('hidden');
+      }
+    });
+  });
+  
+  // Spotlight + Tilt effect (React Bits inspired)
+  items.forEach(function(item){
+    var inner = item.querySelector('.tilt-inner');
+    var spotlight = item.querySelector('.spotlight');
+    
+    item.addEventListener('mousemove', function(e){
+      var rect = item.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      var y = e.clientY - rect.top;
+      var px = x / rect.width;
+      var py = y / rect.height;
+      
+      // Spotlight
+      item.style.setProperty('--mx', x + 'px');
+      item.style.setProperty('--my', y + 'px');
+      
+      // Tilt (3D perspective effect)
+      var rx = (py - 0.5) * -10;
+      var ry = (px - 0.5) * 10;
+      inner.style.transform = 'perspective(1000px) rotateX(' + rx + 'deg) rotateY(' + ry + 'deg) scale3d(1.02,1.02,1.02)';
+    });
+    
+    item.addEventListener('mouseleave', function(){
+      inner.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1,1,1)';
+    });
+  });
+  
+  // Lightbox
+  var lightbox = document.getElementById('lightbox');
+  var lbImg = document.getElementById('lbImg');
+  var lbTitle = document.getElementById('lbTitle');
+  var lbDesc = document.getElementById('lbDesc');
+  var currentIndex = 0;
+  var visibleItems = [];
+  
+  function updateVisibleItems(){
+    visibleItems = Array.from(items).filter(function(i){return !i.classList.contains('hidden');});
+  }
+  
+  function openLightbox(index){
+    updateVisibleItems();
+    currentIndex = index;
+    var item = visibleItems[index];
+    var img = item.querySelector('img');
+    lbImg.src = img.src;
+    lbTitle.textContent = item.dataset.title;
+    lbDesc.textContent = item.dataset.desc;
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  
+  function closeLightbox(){
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  
+  function navigate(dir){
+    updateVisibleItems();
+    if(visibleItems.length === 0) return;
+    currentIndex = (currentIndex + dir + visibleItems.length) % visibleItems.length;
+    var item = visibleItems[currentIndex];
+    var img = item.querySelector('img');
+    lbImg.src = img.src;
+    lbTitle.textContent = item.dataset.title;
+    lbDesc.textContent = item.dataset.desc;
+  }
+  
+  items.forEach(function(item, idx){
+    item.addEventListener('click', function(){
+      updateVisibleItems();
+      var visibleIdx = visibleItems.indexOf(item);
+      openLightbox(visibleIdx);
+    });
+  });
+  
+  document.getElementById('lbClose').addEventListener('click', closeLightbox);
+  document.getElementById('lbPrev').addEventListener('click', function(){navigate(-1);});
+  document.getElementById('lbNext').addEventListener('click', function(){navigate(1);});
+  
+  lightbox.addEventListener('click', function(e){
+    if(e.target === lightbox) closeLightbox();
+  });
+  
+  document.addEventListener('keydown', function(e){
+    if(!lightbox.classList.contains('active')) return;
+    if(e.key === 'Escape') closeLightbox();
+    if(e.key === 'ArrowLeft') navigate(-1);
+    if(e.key === 'ArrowRight') navigate(1);
+  });
+})();
+</script>
+</html>
